@@ -342,6 +342,7 @@ class ClawSolver1D(ClawSolver):
             LL = self.num_ghost - 1
             UL = self.num_ghost + grid.num_cells[0] + 1
 
+ ##############  hbox grid time stepping ##########################
             alpha = state.problem_data['fraction']
             nw = state.problem_data['wall_position']
             iw = nw + self.num_ghost -1
@@ -349,28 +350,21 @@ class ClawSolver1D(ClawSolver):
                 q_hbox[m,:] -= dtdx_reg[iw-1:iw+3] * apdq_hbox[m,0:4]
                 q_hbox[m,:] -= dtdx_reg[iw-1:iw+3] * amdq_hbox[m,0:4]
 ###################################################################
-
             # Update q for Godunov update
             for m in range(num_eqn):
                 q[m,LL:UL] -= dtdx_reg[LL:UL]*apdq[m,LL-1:UL-1]
                 q[m,LL-1:UL-1] -= dtdx_reg[LL-1:UL-1]*amdq[m,LL-1:UL-1]
-###########################################################  hbox grid time stepping
-            # alpha = state.problem_data['fraction']
-            # nw = state.problem_data['wall_position']
-            # iw = nw + self.num_ghost -1
-            # for m in range(num_eqn):  # Marsha Berger idea
-            #     q_hbox[m,:] -= dtdx[iw-1:iw+3] * apdq_hbox[m,0:4]
-            #     q_hbox[m,:] -= dtdx[iw-1:iw+3] * amdq_hbox[m,0:4]
-            # # print(q_hbox)
-####################################################### hbox grid reaveraging into ori grid
-            # interploate hbox values into the actual q
+#######################################################
+
+############## hbox grid reaveraging into original grid  #############
+############## i.e. interploate hbox values into the actual q ########
             q[:,iw] = q_hbox[:,1]
             q[:,iw-1] = (1-alpha)*q_hbox[:,1] + alpha*q_hbox[:,0]
             q[:,iw+1] = q_hbox[:,2]
             q[:,iw+2] = alpha*q_hbox[:,2] + (1-alpha)*q_hbox[:,3]
             q[:,iw-2] = alpha*q[:,iw-2] + (1-alpha)*q_hbox[:,0]
             q[:,iw+3] = alpha*q_hbox[:,3] + (1-alpha)*q[:,iw+3]
-# ###################################################################
+#######################################################################
 
             # Compute maximum wave speed
             cfl = 0.0
